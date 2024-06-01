@@ -190,15 +190,17 @@ func logging(code int, err error, w http.ResponseWriter, r *http.Request) {
 // 中间件函数，用于验证用户身份
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		core.DebugLog("通过获取cookie中的Userauth进行验证")
-		cookie1, err := r.Cookie("Userauth")
-		if err != nil {
-			logging(401, errors.New("您未设置 Userauth 值，请在主页设置"), w, r)
-			return
-		}
-		if auth != "" && cookie1.Value != auth {
-			logging(401, errors.New("您未设置 Userauth 值，请在主页设置"), w, r)
-			return
+		if auth != "" {
+			core.DebugLog("通过获取cookie中的Userauth进行验证")
+			cookie1, err := r.Cookie("Userauth")
+			if err != nil {
+				logging(401, errors.New("您未设置 Userauth 值，请在主页设置"), w, r)
+				return
+			}
+			if cookie1.Value != auth {
+				logging(401, errors.New("您未设置 Userauth 值，请在主页设置"), w, r)
+				return
+			}
 		}
 		// 如果身份验证通过，继续执行下一个处理程序
 		next.ServeHTTP(w, r)
@@ -209,7 +211,7 @@ func authMiddleware(next http.Handler) http.Handler {
 func setuserauth(w http.ResponseWriter, r *http.Request) {
 	core.DebugLog("设置userauth")
 	core.DebugLog("验证是否设置Userauth")
-	if r.Method == "POST" || r.Header.Get("Userauth") != "" {
+	if r.Method == "POST" && r.Header.Get("Userauth") != "" {
 		http.SetCookie(w, &http.Cookie{Name: "Userauth", Value: r.Header.Get("Userauth")})
 	}
 	core.DebugLog("获取主机名")
