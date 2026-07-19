@@ -17,7 +17,7 @@ go build -o server_Tool -ldflags="-s -w" -trimpath .
 # 交叉编译示例（无需再拷网页资源）
 GOOS=linux   GOARCH=amd64 go build -o server_Tool_linux_amd64   -ldflags="-s -w" -trimpath .
 GOOS=windows GOARCH=amd64 go build -o server_Tool_windows_amd64.exe -ldflags="-s -w" -trimpath .
-GOOS=darwin  GOARCH=amd64 go build -o server_Tool_darwin_amd64  -ldflags="-s -w" -trimpath .
+GOOS=darwin  GOARCH=arm64 go build -o server_Tool_darwin_arm64  -ldflags="-s -w" -trimpath .
 
 # 需要注意的是MAC存在证书问题，需要输入：codesign --sign - 文件程序名
 ```
