@@ -1,0 +1,30 @@
+{{template "header" .}}
+<div class="help"><strong>说明：</strong>输入与启动参数 <code>-token</code> 完全一致的密钥。成功后浏览器保存 HttpOnly Cookie（约 8 小时），即可访问受保护功能。</div>
+<div class="card">
+  <p style="font-size:18px;font-weight:bold">set userauth:
+    <input type="text" id="userauth" style="width:220px" autocomplete="off">
+  </p>
+  <button id="setuserauth">Set</button>
+  <p id="auth-result" style="margin-top:12px;color:#666"></p>
+</div>
+<script>
+document.getElementById('setuserauth').addEventListener('click', function () {
+  var val = document.getElementById('userauth').value;
+  var result = document.getElementById('auth-result');
+  fetch('/setuserauth', { method: 'POST', headers: { 'Userauth': val } })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function () {
+      result.textContent = '设置成功，可访问文件/聊天/上传';
+      result.className = 'ok';
+    })
+    .catch(function (e) {
+      result.textContent = '设置失败：请确认与服务端 -token 一致';
+      result.className = 'err';
+      console.error(e);
+    });
+});
+</script>
+</body></html>

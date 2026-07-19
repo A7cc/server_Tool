@@ -1,0 +1,54 @@
+{{template "header" .}}
+<div class="card">
+  <p style="font-size:18px;font-weight:bold">Save Path:
+    <input type="text" id="save_path" style="width:220px" value="./">
+    <button id="upload-button">Upload</button>
+  </p>
+  <p>
+    <label class="btn">Choose Files
+      <input type="file" id="file_input" name="files[]" multiple style="display:none">
+    </label>
+  </p>
+  <div class="file-names" id="file_names" style="margin:10px 0"></div>
+  <div class="uploaded-files" id="uploaded_files" style="margin-top:16px"></div>
+</div>
+<script>
+var textInput = document.getElementById('save_path');
+var fileInput = document.getElementById('file_input');
+var fileNames = document.getElementById('file_names');
+var uploadButton = document.getElementById('upload-button');
+var uploadedFiles = document.getElementById('uploaded_files');
+if (fileInput) {
+  fileInput.addEventListener('change', function () {
+    var names = Array.from(this.files).map(function (f) { return f.name; }).join(', ');
+    fileNames.textContent = names;
+  });
+}
+if (uploadButton && !uploadButton.disabled) {
+  uploadButton.addEventListener('click', function () {
+    var files = fileInput.files;
+    if (!files.length) { alert('Please choose at least one file.'); return; }
+    var formData = new FormData();
+    Array.from(files).forEach(function (file) {
+      formData.append('files[]', file);
+      uploadedFiles.innerHTML += '<div style="background:#ecf0f1;padding:10px;border-radius:5px;margin-bottom:8px">正在上传：' + escapeHTML(file.name) + '</div>';
+    });
+    formData.append('save_path', textInput.value);
+    fetch('/upload', { method: 'POST', body: formData })
+      .then(function (response) {
+        return response.text().then(function (t) { return { ok: response.ok, t: t }; });
+      })
+      .then(function (res) {
+        var color = res.ok ? '#e8f5e9' : '#f8d7da';
+        uploadedFiles.innerHTML += '<div style="background:' + color + ';padding:10px;border-radius:5px;margin-bottom:8px">' + escapeHTML(res.t) + '</div>';
+        fileInput.value = '';
+        fileNames.textContent = '';
+      })
+      .catch(function (e) {
+        console.error(e);
+        alert('Upload failed');
+      });
+  });
+}
+</script>
+</body></html>

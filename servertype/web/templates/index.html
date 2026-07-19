@@ -1,0 +1,11 @@
+{{template "header" .}}
+<div class="menu">
+  <a href="/showfile/">1. 文件下载 / 浏览</a>
+  <a href="/upload">2. 文件上传</a>
+  <a href="/chatroomhome">3. 简易聊天室</a>
+  {{if .AuthEnabled}}
+  <a href="/setuser">4. 聊天室用户设置</a>
+  <a href="/setuserauth">5. 设置 userauth</a>
+  {{end}}
+</div>
+</body></html>

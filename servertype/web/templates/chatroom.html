@@ -1,0 +1,121 @@
+{{template "header" .}}
+<div class="help">
+  <strong>说明：</strong>输入已分配用户名登录。群发直接输入；私聊 <code>@user:</code> 或 <code>@u1,u2:消息</code>。
+</div>
+<div class="chat-wrap">
+  <div class="chat-body">
+    <div class="chat-users">
+      <h4>CCU: <span id="user_num">0</span></h4>
+      <hr>
+      <div id="user_list"></div>
+    </div>
+    <div class="chat-main">
+      <div class="chat-list" id="content"></div>
+      <div class="chat-input">
+        <textarea id="msg"></textarea>
+        <div id="send-btn">发送</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var username = '';
+  username = prompt('请输入您分配到的用户名');
+  if (username === null) { alert('必须输入用户名'); username = ''; window.location.href = '/'; }
+  username = username.trim();
+  if (!username) { alert('用户名不能为空'); window.location.href = '/'; }
+  var protocol = (window.location.protocol === 'https:') ? 'wss://' : 'ws://';
+  var websocket = new WebSocket(protocol + window.location.host + '/wschatroom');
+
+  function appendHTML(html) {
+    var chat = document.querySelector('.chat-list');
+    chat.insertAdjacentHTML('beforeend', html);
+    chat.scrollTop = chat.scrollHeight;
+  }
+  function printPrompt(text) {
+    appendHTML('<p class="sys">' + escapeHTML(text) + '</p>');
+  }
+  function newMessage(data, isSelf) {
+    var cls = isSelf ? 'self' : 'other';
+    appendHTML(
+      '<div class="msg-item"><div class="who">' + escapeHTML(data.username) +
+      '</div><div class="bubble ' + cls + '">' + escapeHTML(data.message) + '</div></div>'
+    );
+  }
+  function renderUserList(list) {
+    var box = $('user_list');
+    box.innerHTML = '';
+    if (!list || !list.length) { $('user_num').textContent = '0'; return; }
+    list.forEach(function (name) {
+      var div = document.createElement('div');
+      div.textContent = name;
+      box.appendChild(div);
+    });
+    $('user_num').textContent = String(list.length);
+  }
+  function sendMsg() {
+    if (websocket.readyState !== WebSocket.OPEN) { printPrompt('WebSocket 尚未连接'); return; }
+    var textarea = $('msg');
+    var msg = textarea.value.trim();
+    if (!msg) return;
+    var match = msg.match(/@([^:]+):/);
+    var othername = [];
+    if (match) {
+      othername = match[1].split(',').map(function (u) { return u.trim(); }).filter(Boolean);
+    }
+    websocket.send(JSON.stringify({
+      username: username,
+      userlist: othername,
+      messagedata: msg,
+      msgtype: 3
+    }));
+    newMessage({ username: username, message: msg }, true);
+    textarea.value = match ? match[0] : '';
+  }
+  $('send-btn').addEventListener('click', sendMsg);
+  $('msg').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMsg(); }
+  });
+  websocket.onopen = function () {
+    printPrompt('服务器已连接，开始聊天吧');
+    websocket.send(JSON.stringify({ username: username }));
+  };
+  websocket.onclose = function () { printPrompt('服务器已断开，请刷新页面重连'); };
+  websocket.onerror = function (err) {
+    console.error(err);
+    printPrompt('服务器异常，请检查是否成功连接服务器');
+  };
+  websocket.onmessage = function (evt) {
+    try {
+      var msg = JSON.parse(evt.data);
+      switch (msg.msgtype) {
+        case 1:
+          renderUserList(msg.userlist || []);
+          printPrompt('系统消息：' + (msg.messagedata || '') + ' 已上线');
+          break;
+        case 2:
+          renderUserList(msg.userlist || []);
+          printPrompt('系统消息：' + (msg.messagedata || '') + ' 已下线');
+          break;
+        case 3:
+          if (msg.username !== username) {
+            newMessage({ username: msg.username, message: msg.messagedata }, false);
+          }
+          break;
+        case 4:
+          printPrompt(msg.messagedata || '');
+          break;
+        case 5: // history
+          if (msg.username && msg.messagedata) {
+            newMessage({ username: msg.username, message: msg.messagedata }, msg.username === username);
+          }
+          break;
+      }
+    } catch (err) {
+      console.error('消息解析错误:', err);
+    }
+  };
+});
+</script>
+</body></html>

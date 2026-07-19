@@ -1,0 +1,33 @@
+{{template "header" .}}
+<div class="help">当前目录：<code>{{.RelPath}}</code></div>
+<table class="files">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Last-modified</th>
+      <th style="text-align:right">Size</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="3" class="sep"></td></tr>
+    {{if .Parent}}
+    <tr><td><a href="{{.Parent}}" style="font-weight:bold">../</a></td><td></td><td></td></tr>
+    {{end}}
+    {{range .Entries}}
+    <tr>
+      {{if .IsDir}}
+      <td><a href="{{.URL}}" style="font-weight:bold">{{.Name}}/</a></td>
+      <td>{{.ModTime}}</td>
+      <td class="size"><strong>-</strong></td>
+      {{else}}
+      <td><a href="{{.URL}}">{{.Name}}</a></td>
+      <td class="muted">{{.ModTime}}</td>
+      <td class="size"><strong>{{.Size}}</strong></td>
+      {{end}}
+    </tr>
+    {{else}}
+    <tr><td colspan="3" class="muted">（空目录）</td></tr>
+    {{end}}
+  </tbody>
+</table>
+</body></html>

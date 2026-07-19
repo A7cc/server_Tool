@@ -1,0 +1,24 @@
+{{define "header"}}
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/common.js"></script>
+</head>
+<body>
+<div id="header">
+  <table>
+    <caption>
+      <div class="caption-row">
+        <div class="left"><a href="/" style="font-weight:bold">[Root]</a></div>
+        <div class="center"><a href="/" style="color:black;font-weight:bold">{{.Hostname}}</a></div>
+        <div class="right"><a href="javascript:history.back()" style="font-weight:bold">[Back]</a></div>
+      </div>
+    </caption>
+    <tr><td class="sep"></td></tr>
+  </table>
+</div>
+{{end}}

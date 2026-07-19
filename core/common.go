@@ -2,32 +2,35 @@ package core
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
+	"time"
 )
 
-// 获取网络IP
+// 获取网络IP（短超时，避免内网环境卡启动）
 func GetNetIP() string {
 	getUrl := "http://httpbin.org/ip"
-	resp, err := http.Get(getUrl)
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get(getUrl)
 	if err != nil {
 		ErrorLog("获取外网IP失败，err:%v\n", err)
 		Myip = ""
+		return Myip
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		ErrorLog("获取外网IP失败，err:%v\n", err)
+		Myip = ""
+		return Myip
+	}
+	b := regexp.MustCompile(`"origin":\s*"(.+?)"`).FindAllStringSubmatch(string(body), -1)
+	if len(b) == 0 {
+		ErrorLog("获取外网IP失败，err:未能从" + getUrl + "网站中获取到IP")
+		Myip = ""
 	} else {
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			ErrorLog("获取外网IP失败，err:%v\n", err)
-			Myip = ""
-		} else {
-			b := regexp.MustCompile(`"origin":.+"(.+?)"`).FindAllStringSubmatch(string(body), -1)
-			if len(b) == 0 {
-				ErrorLog("获取外网IP失败，err:未能从" + getUrl + "网站中获取到IP")
-			} else {
-				Myip = b[0][1]
-			}
-		}
+		Myip = b[0][1]
 	}
 	return Myip
 }

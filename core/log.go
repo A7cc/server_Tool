@@ -24,7 +24,10 @@ var (
 )
 
 // 写入文件
-func writeFile(log string, filename string) {
+func writeFile(log string, filename string, logflag bool) {
+	if !logflag {
+		return
+	}
 	var text = []byte(log + "\n")
 	fl, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -41,61 +44,61 @@ func writeFile(log string, filename string) {
 // 打印内容
 func PrintLog(format string, args ...interface{}) {
 	logdata := fmt.Sprintf(format, args...)
-	writeFile("    "+logdata, outfile)
+	writeFile("    "+logdata, Outfile, Logflag)
 	fmt.Printf("    %s\n", logdata)
 }
 
 // 设置必须显示的日志颜色
 func InfoLog(format string, args ...interface{}) {
 	logdata := fmt.Sprintf(format, args...)
-	writeFile("[*] "+logdata, outfile)
+	writeFile("[*] "+logdata, Outfile, Logflag)
 	fmt.Printf("%s %s\n", INFO, logdata)
 }
 
 // 设置正确颜色
 func RightLog(format string, args ...interface{}) {
 	logdata := fmt.Sprintf(format, args...)
-	writeFile("[✓] "+logdata, outfile)
+	writeFile("[✓] "+logdata, Outfile, Logflag)
 	fmt.Printf("%s %s\n", RIGHT, logdata)
 }
 
 // 设置必须的错误颜色
 func ErrorLog(format string, args ...interface{}) {
 	logdata := fmt.Sprintf(format, args...)
-	writeFile("[✘] "+logdata, outfile)
+	writeFile("[✘] "+logdata, Outfile, Logflag)
 	fmt.Printf("%s %s\n", ERR, logdata)
 }
 
 // 设置警告
 func WarnLog(format string, args ...interface{}) {
 	logdata := fmt.Sprintf(format, args...)
-	writeFile("[!] "+logdata, outfile)
+	writeFile("[!] "+logdata, Outfile, Logflag)
 	fmt.Printf("%s %s\n", WARNING, logdata)
 }
 
 // 设置错误颜色
 func ErrLog(format string, args ...interface{}) {
-	if debugLevel >= 1 {
+	if DebugLevel >= 1 {
 		logdata := fmt.Sprintf(format, args...)
-		writeFile("[✘] "+logdata, outfile)
+		writeFile("[✘] "+logdata, Outfile, Logflag)
 		fmt.Printf("%s %s\n", ERR, logdata)
 	}
 }
 
 // 设置debug等级
 func DebugLog(format string, args ...interface{}) {
-	if debugLevel >= 2 {
+	if DebugLevel >= 2 {
 		logdata := fmt.Sprintf(format, args...)
-		writeFile("[D] "+logdata, outfile)
+		writeFile("[D] "+logdata, Outfile, Logflag)
 		fmt.Printf("%s %s\n", DEBUG, logdata)
 	}
 }
 
 // 设置警告
 func WarningLog(format string, args ...interface{}) {
-	if debugLevel >= 3 {
+	if DebugLevel >= 3 {
 		logdata := fmt.Sprintf(format, args...)
-		writeFile("[!] "+logdata, outfile)
+		writeFile("[!] "+logdata, Outfile, Logflag)
 		fmt.Printf("%s %s\n", WARNING, logdata)
 	}
 }
